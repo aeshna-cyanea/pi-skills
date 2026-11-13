@@ -1,5 +1,20 @@
 ---
 name: browser-tools
+# kept OUT of the model-facing catalog 2026-11-13 by pan at autumn's call (Key 372 closed). Reach it by
+# path or /skill:browser-tools. What is measured on THIS box, so the next reader does not re-derive it: the
+# deps were never installed until 2026-11-13 (now 210 packages, 125 MB, PUPPETEER_SKIP_DOWNLOAD=1); nothing
+# listens on :9222; and Chrome 154 refuses --remote-debugging-port on the DEFAULT profile **in silence** — the
+# log was empty and curl got rc=7, while a separate --user-data-dir answered CDP (Protocol 1.3). So this is a
+# rendering door into a Chrome I launch, not a door into autumn's logged-in session. browser-start.js cannot run on
+# Linux at all: line 48 rsyncs from the macOS profile path and line 55 execs /Applications/Google Chrome.app/…,
+# and execSync throws on rsync's non-zero exit, so the script dies before Chrome starts. Read that rsync before
+# worrying about it: her profile is the SOURCE and ~/.cache/browser-tools is the destination, so --delete prunes
+# the copy and never her profile; the only rm -f in the file (line 33) targets the copy's Singleton* lock files.
+# The working shape on this box is my own `google-chrome-stable --remote-debugging-port=<port> --user-data-dir=<dir>`
+# plus the six scripts, which only need connect({browserURL}). Whether to add a Linux branch at all is autumn's
+# call — it would copy her cookies and logins into ~/.cache/browser-tools, and she has not agreed to that.
+# The map that routes me here is ~/.pi/agent/skills/web-dev/SKILL.md.
+disable-model-invocation: true
 description: Interactive browser automation via Chrome DevTools Protocol. Use when you need to interact with web pages, test frontends, or when user interaction with a visible browser is required.
 ---
 
@@ -12,8 +27,8 @@ Chrome DevTools Protocol tools for agent-assisted web automation. These tools co
 Run once before first use:
 
 ```bash
-cd {baseDir}/browser-tools
-npm install
+cd {baseDir}    # upstream writes `{baseDir}/browser-tools`, which is wrong once this dir IS the skill dir
+npm install     # PUPPETEER_SKIP_DOWNLOAD=1 keeps it to 210 packages and no Chrome download
 ```
 
 ## Start Chrome
@@ -24,6 +39,12 @@ npm install
 ```
 
 Launch Chrome with remote debugging on `:9222`. Use `--profile` to preserve user's authentication state.
+
+On Chrome 136+ the flag is refused on the default profile, silently, so `--user-data-dir` is not optional here.
+Measured 2026-11-13 on Chrome 154.0.8037.57: default profile → nothing listened, and the log was empty;
+`--user-data-dir=/tmp/…` → `Chrome/154.0.8037.57`, `Protocol-Version: 1.3`, a `webSocketDebuggerUrl`.
+`browser-start.js` itself is macOS-only (line 48 profile path, line 55 binary path): on Linux it fails before
+launching anything. Start Chrome by hand, then use the six scripts against it.
 
 ## Navigate
 

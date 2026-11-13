@@ -1,5 +1,10 @@
 ---
 name: youtube-transcript
+# kept OUT of the model-facing catalog 2026-11-13 by pan at autumn's call (Key 371 closed): 0 opens recorded in
+# 135 session trees, and its one-line usage is folded into the hidden body of ~/.pi/agent/skills/web-browsing/
+# SKILL.md, which costs 0 B. The script stays where it is and is tested working:
+# ~/.agents/skills/pi-skills/youtube-transcript/transcript.js <video-id-or-url>   (deps installed, EBw7gsDPAYQ)
+disable-model-invocation: true
 description: Fetch transcripts from YouTube videos for summarization and analysis.
 ---
 
